@@ -34,12 +34,23 @@ command! -bang -nargs=? -complete=customlist,UltiSnips#FileTypeComplete UltiSnip
 
 command! -nargs=1 UltiSnipsAddFiletypes :call UltiSnips#AddFiletypes(<q-args>)
 
+let s:debounce_timer = -1
+
+function! s:DebounceTrackChange()
+    if s:debounce_timer != -1
+        call timer_stop(s:debounce_timer)
+    endif
+
+    let l:debounce_time = get(g:, 'UltiSnipsDebounceTime', 100)
+    let s:debounce_timer = timer_start(l:debounce_time, {-> UltiSnips#TrackChange()})
+endfunction
+
 augroup UltiSnips_AutoTrigger
     au!
-    au InsertCharPre * call UltiSnips#TrackChange()
-    au TextChangedI * call UltiSnips#TrackChange()
+    au InsertCharPre * call s:DebounceTrackChange()
+    au TextChangedI * call s:DebounceTrackChange()
     if exists('##TextChangedP')
-        au TextChangedP * call UltiSnips#TrackChange()
+        au TextChangedP * call s:DebounceTrackChange()
     endif
 augroup END
 

@@ -813,6 +813,10 @@ class SnippetManager:
 
     def _can_expand(self, autotrigger_only=False):
         before = vim_helper.buf.line_till_cursor
+        """Check if 'before' is empty or ends with a space"""
+        if not before or before[-1] == ' ':
+            return None, []
+
         return before, self._snips(before, False, autotrigger_only)
 
     def _try_expand(self, autotrigger_only=False):
